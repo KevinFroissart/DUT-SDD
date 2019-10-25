@@ -4,9 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-public class BinarySearchTree<K,V> implements Map<K,V> {
-
-	public static Node root;
+public class BinarySearchTree<K extends Comparable<K>,V extends Comparable<V>> implements Map<K,V> {
 
 	K key;
 	V value;
@@ -14,89 +12,25 @@ public class BinarySearchTree<K,V> implements Map<K,V> {
 	BinarySearchTree<K, V> left;
 	BinarySearchTree<K, V> right;
 
+	String txt;
+	int size;
+
 	public BinarySearchTree(K key, V value) {
 		this.key = key;
 		this.value = value;
+		left = null;
+		right = null;
 	}
+
 	public BinarySearchTree(){
-		root = null;
+		this.left = new BinarySearchTree<>();
+		this.right = new BinarySearchTree<>();
 	}
 
-	public boolean find(int id){
-		Node current = root;
-		while(current!=null){
-			if(current.data==id){
-				return true;
-			}else if(current.data>id){
-				current = current.left;
-			}else{
-				current = current.right;
-			}
-		}
-		return false;
-	}
-	public boolean delete(int id){
-		Node parent = root;
-		Node current = root;
-		boolean isLeftChild = false;
-		while(current.data!=id){
-			parent = current;
-			if(current.data>id){
-				isLeftChild = true;
-				current = current.left;
-			}else{
-				isLeftChild = false;
-				current = current.right;
-			}
-			if(current ==null){
-				return false;
-			}
-		}
-		if(current.left==null && current.right==null){
-			if(current==root){
-				root = null;
-			}
-			if(isLeftChild ==true){
-				parent.left = null;
-			}else{
-				parent.right = null;
-			}
-		}
-		else if(current.right==null){
-			if(current==root){
-				root = current.left;
-			}else if(isLeftChild){
-				parent.left = current.left;
-			}else{
-				parent.right = current.left;
-			}
-		}
-		else if(current.left==null){
-			if(current==root){
-				root = current.right;
-			}else if(isLeftChild){
-				parent.left = current.right;
-			}else{
-				parent.right = current.right;
-			}
-		}else if(current.left!=null && current.right!=null){
-			Node successor	 = getSuccessor(current);
-			if(current==root){
-				root = successor;
-			}else if(isLeftChild){
-				parent.left = successor;
-			}else{
-				parent.right = successor;
-			}			
-			successor.left = current.left;
-		}		
-		return true;		
-	}
-
-	public Node getSuccessor(Node deleleNode){
-		Node successsor =null;
-		Node successsorParent =null;
-		Node current = deleleNode.right;
+	public BinarySearchTree<K, V> getSuccessor(BinarySearchTree<K, V> deleleNode){
+		BinarySearchTree<K, V> successsor = null;
+		BinarySearchTree<K, V> successsorParent = null;
+		BinarySearchTree<K, V> current = deleleNode.right;
 		while(current!=null){
 			successsorParent = successsor;
 			successsor = current;
@@ -108,108 +42,216 @@ public class BinarySearchTree<K,V> implements Map<K,V> {
 		}
 		return successsor;
 	}
-	public void display(Node root){
-		if(root!=null){
-			display(root.left);
-			System.out.print(" " + root.data);
-			display(root.right);
+	public String display(BinarySearchTree<K, V> bst){
+		if(bst!=null){
+			display(bst.left);
+			txt += " " + bst.value + "\n"; 
+			display(bst.right);
 		}
+		return txt;
+	}
+
+	public String toString() {
+		txt = "";
+		return display(this);
 	}
 
 	public static void main(String arg[]){
-		BinarySearchTree b = new BinarySearchTree();
+		BinarySearchTree<Integer, Integer> b = new BinarySearchTree<Integer,Integer>(25, 5);
+		b.put(4, 12);
+		b.put(6, 6);
+		b.put(3, 16);
+		b.put(10, 9);
+		b.put(15, 4);
+		b.put(8, 2);
+		b.put(10, 6);
+		b.put(13, 8);
 
 		System.out.println("Original Tree : ");
-		b.display(b.root);		
-		System.out.println("");
-		System.out.println("Check whether Node with value 4 exists : " + b.find(4));
-		System.out.println("Delete Node with no children (2) : " + b.delete(2));		
-		b.display(root);
-		System.out.println("\n Delete Node with one child (4) : " + b.delete(4));		
-		b.display(root);
-		System.out.println("\n Delete Node with Two children (10) : " + b.delete(10));		
-		b.display(root);
+		System.out.println(b.toString());		
+		System.out.println("La plus petite valeur est :" + b.bstMin());
+		System.out.println("La valeur 4 existe ? : " + b.containsValue(4));
+		System.out.println("La clé 4 existe ? : " + b.containsKey(4));
+		System.out.println("On supprime la clé 6 : " + b.remove(6));
+		System.out.println(b.toString());		
+		System.out.println("On supprime la clé 8 avec enfants " + b.remove(8));		
+		System.out.println(b.toString());		
+		System.out.println("On supprime la clé 10 sans enfants " + b.remove(10));		
+		System.out.println(b.toString());		
+
+	}
+
+	public V bstMin() {
+		if(this.left == null) {
+			return this.value;
+		}
+		System.out.println(value + " " + this.left.value);
+		return this.left.bstMin();
+	}
+
+	public void deleteMin() {
+		if(this.left == null) {
+			this.value = null;
+			this.key = null;
+		}
+		else this.left.deleteMin();
 	}
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+		if(this.isEmpty()) return 0;
+		return size(this);
+	}
+
+	public int size(BinarySearchTree<K, V> bst) {
+		if(bst==null){
+			return 0;
+		}
+		return 1 + size(bst.left) + size(bst.right);
 	}
 
 	@Override
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		return false;
+		return get(this.key) == null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean containsKey(Object key) {
 		if(this.key.equals( key)){
 			return true;
 		}
-		if(((String) key).compareTo((String) this.key) < 0){
+		if(((Comparable<K>) key).compareTo(this.key) < 0){
 			return left == null ? null : left.containsKey(key);
-		} else if(((String) key).compareTo((String) this.key) > 0){
+		} else if(((Comparable<K>) key).compareTo(this.key) > 0){
 			return right == null ? null : right.containsKey(key);
 		} else {
 			return false;
 		}
 	}
 
+	@SuppressWarnings({ "unchecked", "unlikely-arg-type" })
 	@Override
 	public boolean containsValue(Object value) {
 		if(this.value.equals(value)){
 			return true;
 		}
-		if(((String) value).compareTo((String) this.value) < 0){
-			return left == null ? null : left.containsValue(value);
-		} else if(((String) key).compareTo((String) this.value) > 0){
-			return right == null ? null : right.containsValue(value);
+		if((this.value).compareTo((V) value) > 0){
+			return get(left) == null ? null : left.containsValue(value);
+		} else if((this.value).compareTo((V) value) < 0) {
+			return get(right) == null ? null : right.containsValue(value);
 		} else {
 			return false;
 		}
 	}
 
+	@SuppressWarnings({ "unchecked", "unlikely-arg-type" })
 	@Override
 	public V get(Object key) {
 		if(this.key.equals( key)){
 			return value;
 		}
-		if(((String) key).compareTo((String) this.key) < 0){
-			return left == null ? null : left.get( key );
+		if(this.key.compareTo((K) key) > 0){
+			return get(left) == null ? null : left.get( key );
 		} else {
-			return right == null ? null : right.get( key );
+			return get(right) == null ? null : right.get( key );
 		}
 	}
 
 	@Override
 	public V put(K key, V value) {
-		if(((String) key).compareTo((String) this.key) < 0 ) {             
+		if(this.key.compareTo(key) < 0){          
 			if ( left != null ) {                 
 				left.put(key, value);             
 			} else {                 
-				left = new BinarySearchTree<K,V>(key,value);             
-			}         
+				left = new BinarySearchTree<K,V>(key,value);
+				return value;
+			} 
 		}         
-		else if(((String) key).compareTo((String) this.key) > 0 )
-		{
+		else if(this.key.compareTo(key) > 0){
 			if ( right != null ) {
 				right.put(key, value);
 			}
 			else {
 				right = new BinarySearchTree<K,V>(key,value);
+				return value;
 			}
 		} else {
-			this.value = value;
+			this.key = key;
+			return value;
 		}
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public V remove(Object key) {
-		// TODO Auto-generated method stub
-		return null;
+
+		BinarySearchTree<K, V> parent = this;
+		BinarySearchTree<K, V> current = this;
+		BinarySearchTree<K, V> root = this;
+
+		boolean isLeftChild = false;
+		V val = this.value;
+
+		while(current.key!=key){
+			parent = current;
+			val = current.value;
+			if((this.key).compareTo((K) key) < 0){
+				isLeftChild = true;
+				current = current.left;
+			}else{
+				isLeftChild = false;
+				current = current.right;
+			}
+			if(current == null){
+				return null;
+			}
+		}
+		if(get(current.left) == null && get(current.right) == null) {
+			val = current.value;
+			if(current == root){
+				current = null;
+			}
+			if(isLeftChild == true){
+				parent.left = null;
+			}else{
+				parent.right = null;
+			}
+			return val;
+		}
+		else if(current.right == null){
+			val = current.value;
+			if(current == this){
+				root = current.left;
+			}else if(isLeftChild){
+				parent.left = current.left;
+			}else{
+				parent.right = current.left;
+			}
+		}
+		else if(current.left==null){
+			val = current.value;
+			if(current==root){
+				root = current.right;
+			}else if(isLeftChild){
+				parent.left = current.right;
+			}else{
+				parent.right = current.right;
+			}
+		}else if(current.left!=null && current.right!=null){
+			val = current.value;
+			BinarySearchTree<K, V> successor = getSuccessor(current);
+			if(current==this){
+				root = successor;
+			}else if(isLeftChild){
+				parent.left = successor;
+			}else{
+				parent.right = successor;
+			}			
+			successor.left = current.left;
+		}		
+		return val;
 	}
 
 	@Override
@@ -240,16 +282,5 @@ public class BinarySearchTree<K,V> implements Map<K,V> {
 	public Set<Entry<K, V>> entrySet() {
 		// TODO Auto-generated method stub
 		return null;
-	}
-}
-
-class Node{
-	int data;
-	Node left;
-	Node right;	
-	public Node(int data){
-		this.data = data;
-		left = null;
-		right = null;
 	}
 }

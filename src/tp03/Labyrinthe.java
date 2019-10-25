@@ -1,4 +1,4 @@
-package tp3;
+package tp03;
 
 /** 
  * C. Durr, Ecole Polytechnique, INF421
